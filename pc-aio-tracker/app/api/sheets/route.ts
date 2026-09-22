@@ -60,6 +60,11 @@ export async function POST(request: Request) {
       const response = await sheets.spreadsheets.values.get({
         spreadsheetId: process.env.SPREADSHEET_ID,
         range: `${sheetName}!A1:ZZ`, // Membaca sampai kolom ZZ agar tidak terpotong
+        // Ambil angka mentah (bukan versi tampilan seperti "1.85073E+15"),
+        // tapi kolom tanggal/waktu tetap dikirim sebagai string terformat
+        // supaya parseSheetDate() di frontend tidak berubah perilakunya.
+        valueRenderOption: "UNFORMATTED_VALUE",
+        dateTimeRenderOption: "FORMATTED_STRING",
       });
 
       const data = response.data.values;
@@ -75,7 +80,17 @@ export async function POST(request: Request) {
       const formattedData = data.slice(1).map((row) => {
         let obj: Record<string, any> = {};
         headers.forEach((header, index) => {
-          obj[header] = row[index] !== undefined ? row[index] : "";
+          let value = row[index] !== undefined ? row[index] : "";
+          // Angka besar (misal PID/CID) datang sebagai number JS asli dari
+          // UNFORMATTED_VALUE. Ubah ke string digit penuh di sini supaya
+          // tidak ada komponen yang tidak sengaja menampilkannya dalam
+          // notasi ilmiah (mis. toString() pada angka sangat besar).
+          if (typeof value === "number") {
+            value = Number.isInteger(value)
+              ? value.toLocaleString("fullwide", { useGrouping: false })
+              : value;
+          }
+          obj[header] = value;
         });
         return obj;
       });
