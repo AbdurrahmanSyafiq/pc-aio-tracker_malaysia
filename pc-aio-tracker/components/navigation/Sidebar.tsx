@@ -1,4 +1,5 @@
 import React from "react";
+import { signOut } from "next-auth/react";
 import { CONFIG, selectClass, dateClass, dateClassDark } from "@/lib/config";
 
 interface SidebarProps {
@@ -451,15 +452,34 @@ export default function Sidebar(props: SidebarProps) {
         </div>
       )}
 
-      {isSidebarOpen && (
-        <div className="p-4 bg-[#090d16] border-t border-slate-800/80 mt-auto">
+      <div className="p-4 bg-[#090d16] border-t border-slate-800/80 mt-auto space-y-2">
+        {isSidebarOpen && (
           <button
             onClick={onSyncLiveData}
             className="w-full bg-[#1e293b] hover:bg-indigo-600 text-white font-bold py-3 rounded-xl border border-slate-700 hover:border-indigo-500 shadow-md transition-all flex justify-center items-center gap-2 text-xs tracking-wide">
             Sync Live Data
           </button>
-        </div>
-      )}
+        )}
+
+        <button
+          onClick={() => signOut({ callbackUrl: "/" })}
+          title="Logout"
+          className={`w-full rounded-xl text-xs font-bold tracking-wide transition-all flex items-center border border-slate-700 text-slate-300 hover:bg-rose-600 hover:border-rose-500 hover:text-white ${isSidebarOpen ? "justify-center gap-2 py-3" : "justify-center p-3"}`}>
+          <svg
+            className="w-4 h-4 shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+            />
+          </svg>
+          {isSidebarOpen && <span>Logout</span>}
+        </button>
+      </div>
     </aside>
   );
 }
